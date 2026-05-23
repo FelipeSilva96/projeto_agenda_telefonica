@@ -1,0 +1,28 @@
+# Aqui vão as variaveis relacionadas ao próprio Visual Studio e ao ecossistema .net
+.vs/
+[Bb]in/
+[Oo]bj/
+*.suo
+*.user
+*.sln.docstates
+
+# bd locais
+*.db
+*.db-shm
+*.db-wal
+
+# pastas e arquivos que precisam ser ignoradas porque senão os commits ficam imensos
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+npm-debug.log*
+yarn-error.log*
+
+# secrets (coisas que não podem ser publicas)
+.env
+*.env
+
+# variaveisd de SO
+.DS_Store
+Thumbs.db

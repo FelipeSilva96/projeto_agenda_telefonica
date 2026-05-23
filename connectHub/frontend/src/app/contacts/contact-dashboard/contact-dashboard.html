@@ -1,0 +1,192 @@
+<div class="dashboard-container">
+  <header class="search-bar-container">
+    <div class="search-input-wrapper">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        placeholder="Buscar por nome, email, telefone ou empresa..."
+        class="search-input"
+      />
+    </div>
+  </header>
+
+  <!-- Modal New/Edit Contact -->
+  <div *ngIf="showModal" class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingContact ? 'Editar Contato' : 'Novo Contato' }}</h3>
+        <button class="modal-close" (click)="closeModal()">×</button>
+      </div>
+      <form class="modal-form" (ngSubmit)="saveFromModal()">
+        <label class="modal-label">Name *</label>
+        <input name="name" [(ngModel)]="formData.name" class="modal-input" placeholder="Name completo" required />
+
+        <label class="modal-label">Phone *</label>
+        <input name="phone" [(ngModel)]="formData.phone" class="modal-input" placeholder="(00) 00000-0000" required />
+
+        <label class="modal-label">Company</label>
+        <input name="company" [(ngModel)]="formData.company" class="modal-input" placeholder="Name da empresa" />
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-primary">{{ editingContact ? 'Salvar' : 'Adicionar' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <main class="content-area">
+      <div class="tabs-header">
+        <div class="tabs-buttons">
+          <button 
+            [class.active]="activeTab === 'todos'" 
+            (click)="activeTab = 'todos'" 
+            class="tab-btn"
+          >
+            <svg class="icon-tab" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            Todos
+          </button>
+          <button 
+            [class.active]="activeTab === 'favoritos'" 
+            (click)="activeTab = 'favoritos'" 
+            class="tab-btn outline"
+          >
+            <svg class="icon-tab" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            favorites
+          </button>
+        </div>
+        <span class="contacts-count">{{ filteredContacts.length }} contatos</span>
+      </div>
+
+      <div class="contacts-list">
+        <div *ngFor="let contact of filteredContacts" class="contact-item">
+          <div class="contact-info-block">
+            <button class="contact-select" (click)="selectedContact = contact">
+              <div class="avatar">{{ contact.initials }}</div>
+              <div class="contact-details">
+                <span class="contact-name">{{ contact.name }}</span>
+                <span class="contact-meta">{{ contact.company }} · {{ contact.phone }}</span>
+              </div>
+            </button>
+          </div>
+          
+          <div class="contact-actions">
+            <button class="action-btn" title="Conversar" (click)="openWhatsApp(contact); $event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            </button>
+            <button class="action-btn" [class.star-active]="contact.isFavorite" (click)="onToggleFavorite(contact); $event.stopPropagation()" title="Favoritar">
+              <svg xmlns="http://www.w3.org/2000/svg" [attr.fill]="contact.isFavorite ? '#f59e0b' : 'none'" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+            </button>
+            <button class="action-btn" title="Editar" (click)="editContact(contact); $event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+            </button>
+            <button class="action-btn delete" title="Excluir" (click)="deleteContact(contact); $event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="sidebar-area">
+      <button class="btn-new-contact" (click)="openNewContact()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="icon-plus">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        </svg>
+        Novo Contato
+      </button>
+
+      <div class="summary-section">
+        <h3 class="section-title">RESUMO</h3>
+        
+        <div class="summary-card total">
+          <div class="summary-label">
+            <svg class="summary-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" /></svg>
+            <span>Total</span>
+          </div>
+          <span class="summary-count">{{ totalCount }}</span>
+        </div>
+
+        <div class="summary-card favoritos">
+          <div class="summary-label">
+            <svg class="summary-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+            <span>favorites</span>
+          </div>
+          <span class="summary-count">{{ favoritesCount }}</span>
+        </div>
+
+        <div class="summary-card whatsapp">
+          <div class="summary-label">
+            <svg class="summary-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            <span>WhatsApp</span>
+          </div>
+          <span class="summary-count">{{ whatsappCount }}</span>
+        </div>
+
+        <div class="summary-card empresas">
+          <div class="summary-label">
+            <svg class="summary-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+            <span>Companys</span>
+          </div>
+          <span class="summary-count">{{ empresasCount }}</span>
+        </div>
+      </div>
+
+      <div class="contact-detail-card" *ngIf="selectedContact; else noContactSelected">
+        <div class="contact-detail-head">
+          <div class="detail-avatar">{{ selectedContact.initials }}</div>
+          <div class="detail-title">
+            <span class="detail-name">{{ selectedContact.name }}</span>
+            <span class="detail-company">{{ selectedContact.company || 'Sem empresa' }}</span>
+          </div>
+        </div>
+        <div class="contact-detail-info">
+          <div class="detail-row">
+            <span>Phone</span>
+            <strong>{{ selectedContact.phone }}</strong>
+          </div>
+          <div class="detail-row">
+            <span>Status</span>
+            <strong>{{ selectedContact.isFavorite ? 'favorite' : 'Normal' }}</strong>
+          </div>
+          <div class="detail-row">
+            <span>QR</span>
+            <strong>Use o QR abaixo</strong>
+          </div>
+        </div>
+      </div>
+      <ng-template #noContactSelected>
+        <div class="contact-detail-empty">
+          <p>Selecione um contato para ver as especificações dele aqui.</p>
+        </div>
+      </ng-template>
+
+      <div class="qr-section">
+        <h3 class="section-title text-center">QR CODE</h3>
+        <div class="qr-placeholder">
+          <ng-container *ngIf="selectedContact; else emptyQr">
+            <div class="qr-code-section">
+              <img [src]="getQrImageUrl(selectedContact)" alt="QR code" class="qr-img" />
+            </div>
+          </ng-container>
+          <ng-template #emptyQr>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="qr-svg">
+              <path d="M0 0h30v30H0zm40 0h20v10H40zm30 0h30v30H70zM0 40h10v20H0zm20 40h10v20H20zm50 0h30v30H70z" fill="#2d2521"/>
+              <path d="M10 10h10v10H10zm60 0h10v10H70zm0 60h10v10H70z" fill="#2d2521"/>
+              <path d="M35 35h30v30H35z" fill="none" stroke="#2d2521" stroke-width="4"/>
+            </svg>
+          </ng-template>
+        </div>
+        <p class="qr-instruction">{{ selectedContact ? 'Abrir WhatsApp para ' + selectedContact.name : 'Selecione um contato para gerar o QR' }}</p>
+      </div>
+    </aside>
+  </div>
+</div>
