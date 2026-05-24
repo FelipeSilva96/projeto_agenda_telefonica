@@ -4,6 +4,11 @@ import { ContactDashboardComponent } from './contacts/contact-dashboard/contact-
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: 'contatos/todos',
+    pathMatch: 'full'
+  },
+  {
+    path: 'contatos/:filtro',
     component: ContactDashboardComponent
   }
 ];
