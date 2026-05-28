@@ -1,22 +1,25 @@
-import { Component, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Renderer2, signal, effect, OnDestroy, NgZone, ChangeDetectorRef, HostBinding } from '@angular/core';import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router'; 
 import { ContactService } from '../contact-service';
 import { Contact } from '../contact';
-
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 @Component({
   selector: 'app-contact-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatTooltipModule, MatIconModule],
   templateUrl: './contact-dashboard.html',
   styleUrls: ['./contact-dashboard.css'],
 })
 export class ContactDashboardComponent implements OnInit, OnDestroy {
   searchQuery: string = '';
   activeTab: 'todos' | 'favoritos' = 'todos';
-
+  mode = signal('light');
+  @HostBinding('class.dark-theme') get isDark() { return this.mode() === 'dark'; }
+  static storageKey = 'docs-theme-storage-current-name';
   contacts: Contact[] = [];
   selectedContact: Contact | null = null;
 
@@ -38,8 +41,19 @@ export class ContactDashboardComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private zone: NgZone,         
     private route: ActivatedRoute, 
-    private router: Router         
-  ) { }
+    private router: Router  ,
+    private renderer: Renderer2       
+  ) { 
+    effect(() => {
+      if (this.mode() == 'dark') {
+        this.renderer.setStyle(document.documentElement, 'color-scheme', 'dark');
+        try { document.documentElement.setAttribute('data-theme', 'dark'); } catch {}
+      } else {
+        this.renderer.setStyle(document.documentElement, 'color-scheme', 'light');
+        try { document.documentElement.removeAttribute('data-theme'); } catch {}
+      }
+    });
+  }
 
   ngOnInit(): void {
     const subRoute = this.route.paramMap.subscribe(params => {
@@ -50,11 +64,50 @@ export class ContactDashboardComponent implements OnInit, OnDestroy {
       } else {
         this.activeTab = 'todos';
       }
+      const currentTheme = this.getStoredThemeName() ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    if (currentTheme) {
+      this.mode.set(currentTheme);
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+      const newColorScheme = event.matches ? "dark" : "light";
+      if (event.matches) {
+        this.mode.set('dark');
+      } else {
+        this.mode.set('light');
+      }
+    });
 
       this.loadContacts();
     });
 
     this.subscription.add(subRoute);
+  }
+changeMode() {
+    if (this.mode() == 'dark')
+      this.mode.set('light');
+    else
+      this.mode.set('dark');
+    this.storeTheme(this.mode());
+  }
+
+  storeTheme(theme: string) {
+    try {
+      window.localStorage[ContactDashboardComponent.storageKey] = theme;
+    } catch { }
+  }
+
+  getStoredThemeName(): string | null {
+    try {
+      return window.localStorage[ContactDashboardComponent.storageKey] || null;
+    } catch {
+      return null;
+    }
+  }
+
+  clearStorage() {
+    try {
+      window.localStorage.removeItem(ContactDashboardComponent.storageKey);
+    } catch { }
   }
 
   private loadContacts(): void {

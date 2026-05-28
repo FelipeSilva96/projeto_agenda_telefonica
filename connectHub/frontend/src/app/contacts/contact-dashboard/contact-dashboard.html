@@ -11,6 +11,16 @@
         class="search-input"
       />
     </div>
+    <div class="header-actions">
+      <button mat-icon-button (click)="changeMode()" aria-label="Alternar tema">
+        <ng-container *ngIf="mode() === 'dark'; else showDarkHeader">
+          <mat-icon>light_mode</mat-icon>
+        </ng-container>
+        <ng-template #showDarkHeader>
+          <mat-icon>dark_mode</mat-icon>
+        </ng-template>
+      </button>
+    </div>
   </header>
 
   <!-- Modal New/Edit Contact -->
@@ -47,6 +57,16 @@
 
           <button type="button" class="btn-primary" (click)="saveFromModal()">
             {{ editingContact ? 'Salvar' : 'Adicionar' }}
+          </button>
+        </div>
+        <div>
+          <button mat-icon-button (click)="changeMode()">
+            <ng-container *ngIf="mode() === 'dark'; else showDark">
+              <mat-icon>light_mode</mat-icon>
+            </ng-container>
+            <ng-template #showDark>
+              <mat-icon>dark_mode</mat-icon>
+            </ng-template>
           </button>
         </div>
       </div>
