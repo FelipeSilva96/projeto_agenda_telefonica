@@ -5,10 +5,10 @@ export const routes: Routes = [
   {
     path: '',
     redirectTo: 'contatos/todos',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'contatos/:filtro',
-    component: ContactDashboardComponent
-  }
+    component: ContactDashboardComponent,
+  },
 ];

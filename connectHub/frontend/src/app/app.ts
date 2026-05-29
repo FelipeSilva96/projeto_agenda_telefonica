@@ -6,7 +6,7 @@ import { ContactDashboardComponent } from './contacts/contact-dashboard/contact-
   standalone: true,
   imports: [ContactDashboardComponent],
   templateUrl: './app.html',
-  styleUrls: ['./app.css']
+  styleUrls: ['./app.css'],
 })
 export class App {
   protected readonly title = signal('frontend');
