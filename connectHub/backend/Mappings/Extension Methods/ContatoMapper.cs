@@ -20,7 +20,7 @@ namespace ConnectHub.Mappers
                 Company = contato.Company,
                 Phone = contato.Phone,
                 Initials = GenerateInitials(contato.Name),
-                IsFavorite = contato.Favorite
+                IsFavorite = contato.Favorite,
             };
         }
 
@@ -40,7 +40,7 @@ namespace ConnectHub.Mappers
                 Name = contatoDto.Name,
                 Company = contatoDto.Company,
                 Phone = Regex.Replace(contatoDto.Phone ?? string.Empty, "[^0-9]", ""),
-                Favorite = contatoDto.IsFavorite
+                Favorite = contatoDto.IsFavorite,
             };
         }
 

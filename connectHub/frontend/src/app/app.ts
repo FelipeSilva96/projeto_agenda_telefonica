@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
-import { ContactDashboardComponent } from './contacts/contact-dashboard/contact-dashboard';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [ContactDashboardComponent],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrls: ['./app.css'],
 })

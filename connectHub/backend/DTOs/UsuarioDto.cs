@@ -16,4 +16,3 @@ namespace ConnectHub.DTOs
         public string Phone { get; set; } = string.Empty;
     }
 }
-
